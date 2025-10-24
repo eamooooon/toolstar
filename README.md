@@ -201,20 +201,15 @@ In this step, we will load the cold-start data for GRPO training. We reference t
 
 ```bash
 #create env
-conda create -n toolstar python==3.10
+conda env create -f environment.yaml
 conda activate toolstar
 
-# install torch & flash-atten
-pip3 install torch==2.4.0 --index-url https://download.pytorch.org/whl/cu124
+# install flash-atten
 pip3 install flash-attn --no-build-isolation
 
 # install RL basic env
 cd Tool_Star_RL
 pip3 install -e .
-
-# This is our RL env freeze file. You can install it as a supplement or use it for checking.
-pip install -r ./Tool-Star-main/requirements.txt
-
 ```
 Please refer to [requirements.txt](https://github.com/dongguanting/Tool-Star/blob/main/requirements.txt) carefully. It is important to note that **vLLM<= 0.6.3 and torch==2.4.0 (seem versions will not work.)**. You can also install a compatible flash_attention package from [here](https://github.com/Dao-AILab/flash-attention/releases).
 
@@ -319,13 +314,12 @@ If you have already trained a model, you can refer to the following process for 
 ### 1. Environment Setup
 
 ```bash
-# Create conda environment
-conda create -n tool_star python=3.10
-conda activate tool_star
+#create env
+conda env create -f environment.yaml
+conda activate toolstar
 
-# Install requirements
-cd Tool-Star-main
-pip install -r requirements.txt
+# install flash-atten
+pip3 install flash-attn --no-build-isolation
 ```
 
 ### 2. LLM Service Deployment
