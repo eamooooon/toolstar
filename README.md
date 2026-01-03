@@ -595,15 +595,36 @@ If you find this work helpful, please cite our papers:
   bibsource    = {dblp computer science bibliography, https://dblp.org}
 }
 
-@misc{dong2025aepo,
-      title={Agentic Entropy-Balanced Policy Optimization}, 
-      author={Guanting Dong and Licheng Bao and Zhongyuan Wang and Kangzhi Zhao and Xiaoxi Li and Jiajie Jin and Jinghan Yang and Hangyu Mao and Fuzheng Zhang and Kun Gai and Guorui Zhou and Yutao Zhu and Ji-Rong Wen and Zhicheng Dou},
-      year={2025},
-      eprint={2510.14545},
-      archivePrefix={arXiv},
-      primaryClass={cs.LG},
-      url={https://arxiv.org/abs/2510.14545}, 
+
+@article{dong2025aepo,
+  author       = {Guanting Dong and
+                  Licheng Bao and
+                  Zhongyuan Wang and
+                  Kangzhi Zhao and
+                  Xiaoxi Li and
+                  Jiajie Jin and
+                  Jinghan Yang and
+                  Hangyu Mao and
+                  Fuzheng Zhang and
+                  Kun Gai and
+                  Guorui Zhou and
+                  Yutao Zhu and
+                  Ji{-}Rong Wen and
+                  Zhicheng Dou},
+  title        = {Agentic Entropy-Balanced Policy Optimization},
+  journal      = {CoRR},
+  volume       = {abs/2510.14545},
+  year         = {2025},
+  url          = {https://doi.org/10.48550/arXiv.2510.14545},
+  doi          = {10.48550/ARXIV.2510.14545},
+  eprinttype    = {arXiv},
+  eprint       = {2510.14545},
+  timestamp    = {Fri, 14 Nov 2025 15:17:45 +0100},
+  biburl       = {https://dblp.org/rec/journals/corr/abs-2510-14545.bib},
+  bibsource    = {dblp computer science bibliography, https://dblp.org}
 }
+
+
 
 ```
 
