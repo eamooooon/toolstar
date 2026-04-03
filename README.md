@@ -5,7 +5,7 @@
 
 
 
-<h1 align="center"> 🔧✨Tool-Star: Empowering LLM-Brained Multi-Tool Reasoner via Reinforcement Learning</a></h1>
+<h1 align="center"> 🔧✨Tool-Star: Empowering Multi-Tool Collaborative Web Agent via Reinforcement Learning</a></h1>
 
 
 <div align="center"> 
@@ -32,6 +32,9 @@
 <h5 align="center"> If you like our project, please give us a star ⭐ on GitHub for the latest update.</h5>
 
 ## 📣 Latest News
+
+- **[Apr 02, 2026]**: 🎉 Our paper **[Tool-Star: Empowering Multi-Tool Collaborative Web Agent via
+Reinforcement Learning](https://arxiv.org/abs/2507.19849)** has been accepted at SIGIR 2026!
 - **[Oct 16, 2025]**: 🚀🚀🚀 We propose a new algorithm [**AEPO**](https://www.arxiv.org/abs/2510.14545), which focused on entropy-balanced agentic RL and consistently outperforms ARPO on datasets like GAIA, HLE, and AIME. Full [codebase](https://github.com/RUC-NLPIR/ARPO/tree/main/AEPO) and [🤗 HF-Models](https://huggingface.co/collections/dongguanting/aepo-68ef6832c99697ee03d5e1c7) of AEPO released.
 - **[July 25, 2025]**: 🚀🚀🚀 We have released a new project **[ARPO](https://github.com/dongguanting/ARPO)** , which significantly accelerates the training process for Tool-star (**~4 times faster** ) and supports training for the Qwen2.5, Qwen3, and Llama3 series models! We welcome everyone to try and star it!!
 - **[June 30, 2025]**: 🔥 We have updated our **[🤗Tool-Star-Qwen-7B](https://huggingface.co/dongguanting/Tool-Star-Qwen-7B)** and refreshed the **[Performance of Tool-Star Series Models](#-performance-of-tool-star-models)** in the README. We welcome everyone to reproduce and cite it!
