@@ -1,11 +1,13 @@
 import json
+import os
 import sys
 # sys.path.append("..")
 from urllib.parse import urljoin
 import time 
 from argparse import Namespace
-from web_search.bing_search import bing_web_search
-from web_search.bing_search import extract_relevant_info
+from web_search.search_provider import extract_relevant_info
+from web_search.search_provider import load_env_file
+from web_search.search_provider import web_search
 from web_search.webpage_utils import extract_text_from_urls, extract_snippet_with_context, error_indicators
 import re
 import asyncio
@@ -13,9 +15,9 @@ from openai import OpenAI
 # from deep_search_dgt import deep_search_dgt
 from transformers import AutoTokenizer
 
+load_env_file()
 
-
-def deep_search_snippet(search_query, top_k=10, use_jina=False, jina_api_key="empty", bing_subscription_key="your bing api key", bing_endpoint="https://api.bing.microsoft.com/v7.0/search"):
+def deep_search_snippet(search_query, top_k=10, use_jina=False, jina_api_key="empty", search_api_key=None, search_endpoint=None):
     # 根据函数参数构建 args
     args = Namespace(
         dataset_name='qa',
@@ -31,8 +33,8 @@ def deep_search_snippet(search_query, top_k=10, use_jina=False, jina_api_key="em
         top_k_sampling=20,
         repetition_penalty=1.05,
         max_tokens=4096,
-        bing_subscription_key=bing_subscription_key,  # 使用函数参数
-        bing_endpoint=bing_endpoint,  # 使用函数参数
+        search_api_key=search_api_key,  # 使用函数参数
+        search_endpoint=search_endpoint,  # 使用函数参数
         eval=False,
         seed=1742208600,
         concurrent_limit=200
@@ -45,8 +47,7 @@ def deep_search_snippet(search_query, top_k=10, use_jina=False, jina_api_key="em
     question = search_query
 
     try:
-        # 调用必应搜索API
-        results = bing_web_search(question, args.bing_subscription_key, args.bing_endpoint) 
+        results = web_search(question, args.search_api_key, args.search_endpoint, count=args.top_k)
         search_cache[question] = results
     except Exception as e:
         print(f"Error during search query '{question}': {e}")
@@ -55,7 +56,7 @@ def deep_search_snippet(search_query, top_k=10, use_jina=False, jina_api_key="em
     # 提取相关信息并限制结果数量
  
     relevant_info = extract_relevant_info(results)[:args.top_k]
-    print("--------------------------------Search Bing Result--------------------------------")
+    print("--------------------------------Search Result--------------------------------")
 
     result = ""
     for info in relevant_info:
@@ -68,7 +69,7 @@ def deep_search_snippet(search_query, top_k=10, use_jina=False, jina_api_key="em
 
     return extracted_info
 
-def deep_search_browser(search_query, top_k=10, use_jina=False, jina_api_key="empty", bing_subscription_key="your bing api key", bing_endpoint="https://api.bing.microsoft.com/v7.0/search"):
+def deep_search_browser(search_query, top_k=10, use_jina=False, jina_api_key="empty", search_api_key=None, search_endpoint=None):
     # workflow: search + 获取所有网页信息 + 根据snippet提取
     # 根据函数参数构建 args
     args = Namespace(
@@ -85,8 +86,8 @@ def deep_search_browser(search_query, top_k=10, use_jina=False, jina_api_key="em
         top_k_sampling=20,
         repetition_penalty=1.05,
         max_tokens=4096,
-        bing_subscription_key=bing_subscription_key,  # 使用函数参数
-        bing_endpoint=bing_endpoint,  # 使用函数参数
+        search_api_key=search_api_key,  # 使用函数参数
+        search_endpoint=search_endpoint,  # 使用函数参数
         eval=False,
         seed=1742208600,
         concurrent_limit=200
@@ -99,8 +100,7 @@ def deep_search_browser(search_query, top_k=10, use_jina=False, jina_api_key="em
     question = search_query
 
     try:
-        # 调用必应搜索API
-        results = bing_web_search(question, args.bing_subscription_key, args.bing_endpoint) 
+        results = web_search(question, args.search_api_key, args.search_endpoint, count=args.top_k)
         search_cache[question] = results
     except Exception as e:
         print(f"Error during search query '{question}': {e}")
@@ -109,7 +109,7 @@ def deep_search_browser(search_query, top_k=10, use_jina=False, jina_api_key="em
     # 提取相关信息并限制结果数量
  
     relevant_info = extract_relevant_info(results)[:args.top_k]
-    print("--------------------------------Search Bing Result--------------------------------")
+    print("--------------------------------Search Result--------------------------------")
 
     # Process documents
     urls_to_fetch = []
@@ -118,7 +118,7 @@ def deep_search_browser(search_query, top_k=10, use_jina=False, jina_api_key="em
         if url not in url_cache:
             urls_to_fetch.append(url)
 
-    print(f"--------------------------------Search Bing Result finish--------------------------------")
+    print(f"--------------------------------Search Result finish--------------------------------")
 
     try:
         contents = extract_text_from_urls(urls_to_fetch)
@@ -162,7 +162,7 @@ def deep_search_browser(search_query, top_k=10, use_jina=False, jina_api_key="em
 
     return formatted_documents
 
-def deep_search_browser_summarize(search_query, top_k=10, use_jina=False, jina_api_key="empty", bing_subscription_key="your bing api key", bing_endpoint="https://api.bing.microsoft.com/v7.0/search"):
+def deep_search_browser_summarize(search_query, top_k=10, use_jina=False, jina_api_key="empty", search_api_key=None, search_endpoint=None):
     # workflow: search + 获取所有网页信息 + 根据snippet提取
     # 根据函数参数构建 args
     args = Namespace(
@@ -179,8 +179,8 @@ def deep_search_browser_summarize(search_query, top_k=10, use_jina=False, jina_a
         top_k_sampling=20,
         repetition_penalty=1.05,
         max_tokens=4096,
-        bing_subscription_key=bing_subscription_key,  # 使用函数参数
-        bing_endpoint=bing_endpoint,  # 使用函数参数
+        search_api_key=search_api_key,  # 使用函数参数
+        search_endpoint=search_endpoint,  # 使用函数参数
         eval=False,
         seed=1742208600,
         concurrent_limit=200
@@ -193,8 +193,7 @@ def deep_search_browser_summarize(search_query, top_k=10, use_jina=False, jina_a
     question = search_query
 
     try:
-        # 调用必应搜索API
-        results = bing_web_search(question, args.bing_subscription_key, args.bing_endpoint) 
+        results = web_search(question, args.search_api_key, args.search_endpoint, count=args.top_k)
         search_cache[question] = results
     except Exception as e:
         print(f"Error during search query '{question}': {e}")
@@ -203,7 +202,7 @@ def deep_search_browser_summarize(search_query, top_k=10, use_jina=False, jina_a
     # 提取相关信息并限制结果数量
  
     relevant_info = extract_relevant_info(results)[:args.top_k]
-    print("--------------------------------Search Bing Result--------------------------------")
+    print("--------------------------------Search Result--------------------------------")
 
     # Process documents
     urls_to_fetch = []
@@ -261,12 +260,15 @@ def deep_search_browser_summarize(search_query, top_k=10, use_jina=False, jina_a
 
 
 def summarize_text(search_query, search_result):
+    api_key = os.getenv("WEB_SEARCH_SUMMARIZER_API_KEY")
+    if not api_key:
+        raise ValueError("Missing WEB_SEARCH_SUMMARIZER_API_KEY in environment or .env file.")
 
-    API_BASE_URL = "your sumarize model api"
-    MODEL_NAME = "Qwen2.5-3B-Instruct" # change your summarize model name
+    api_base_url = os.getenv("WEB_SEARCH_SUMMARIZER_BASE_URL", "https://token-plan-cn.xiaomimimo.com/v1")
+    model_name = os.getenv("WEB_SEARCH_SUMMARIZER_MODEL", "mimo-v2.5")
     client = OpenAI(
-        api_key="empty",
-        base_url=API_BASE_URL,
+        api_key=api_key,
+        base_url=api_base_url,
     )
 
 
@@ -310,7 +312,7 @@ def summarize_text(search_query, search_result):
     
     
     chat_response = client.chat.completions.create(
-        model=MODEL_NAME,
+        model=model_name,
         messages=[
             {
                 "role": "user",

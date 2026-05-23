@@ -19,7 +19,8 @@ NNODES=1
 SAVE_FREQ=10
 TEST_FREQ=10
 TOTAL_EPOCHS=10
-WANDB_API_KEY=your-wandb-api-key
+WANDB_API_KEY=None
+SWANLAB_API_KEY=None
 SAVE_PATH=your/save/path  # your save path here
 
 TRAIN_DATA_PATH=your/train/data/path  # your train data path here
@@ -45,6 +46,7 @@ while [[ $# -gt 0 ]]; do
         --test_freq) TEST_FREQ="$2"; shift 2;;
         --total_epochs) TOTAL_EPOCHS="$2"; shift 2;;
         --wandb_api_key) WANDB_API_KEY="$2"; shift 2;;
+        --swanlab_api_key) SWANLAB_API_KEY="$2"; shift 2;;
         --save_path) SAVE_PATH="$2"; shift 2;;
         --train_data_path) TRAIN_DATA_PATH="$2"; shift 2;;
         --dev_data_path) DEV_DATA_PATH="$2"; shift 2;;
@@ -54,8 +56,13 @@ while [[ $# -gt 0 ]]; do
     esac
 done
 
-if [ "$WANDB_API_KEY" != "None" ]; then
+if [ -n "$WANDB_API_KEY" ] && [ "$WANDB_API_KEY" != "None" ]; then
     wandb login --relogin $WANDB_API_KEY
+fi
+
+if [ -n "$SWANLAB_API_KEY" ] && [ "$SWANLAB_API_KEY" != "None" ]; then
+    export SWANLAB_API_KEY=${SWANLAB_API_KEY}
+    export SWANLAB_LOG_DIR=${SAVE_PATH}/swanlog
 fi
 
 # make output directory
@@ -99,7 +106,7 @@ python3 -m verl.trainer.main_ppo \
     actor_rollout_ref.ref.fsdp_config.param_offload=True \
     reward_model.reward_manager=${REWARD_MANAGER} \
     trainer.critic_warmup=0 \
-    trainer.logger=['wandb'] \
+    trainer.logger="[console, swanlab]" \
     trainer.project_name=${PROJECT_NAME} \
     trainer.experiment_name=${EXPERIMENT_NAME} \
     trainer.n_gpus_per_node=4 \

@@ -20,6 +20,8 @@ N_GPUS_PER_NODE=4
 SAVE_FREQ=10
 TEST_FREQ=5
 TOTAL_EPOCHS=2
+WANDB_API_KEY=None
+SWANLAB_API_KEY=None
 
 while [[ $# -gt 0 ]]; do
     case "$1" in
@@ -42,6 +44,7 @@ while [[ $# -gt 0 ]]; do
         --test_freq) TEST_FREQ="$2"; shift 2;;
         --total_epochs) TOTAL_EPOCHS="$2"; shift 2;;
         --wandb_api_key) WANDB_API_KEY="$2"; shift 2;;
+        --swanlab_api_key) SWANLAB_API_KEY="$2"; shift 2;;
         --save_path) SAVE_PATH="$2"; shift 2;;
         --train_files) TRAIN_FILES="$2"; shift 2;;
         --test_files) TEST_FILES="$2"; shift 2;;
@@ -51,9 +54,14 @@ while [[ $# -gt 0 ]]; do
     esac
 done
 
-if [ "$WANDB_API_KEY" != "None" ]; then
+if [ -n "$WANDB_API_KEY" ] && [ "$WANDB_API_KEY" != "None" ]; then
     wandb login --relogin $WANDB_API_KEY
     export WANDB_DIR=${SAVE_PATH}
+fi
+
+if [ -n "$SWANLAB_API_KEY" ] && [ "$SWANLAB_API_KEY" != "None" ]; then
+    export SWANLAB_API_KEY=${SWANLAB_API_KEY}
+    export SWANLAB_LOG_DIR=${SAVE_PATH}/swanlog
 fi
 
 if [ ! -d "$SAVE_PATH" ]; then
@@ -104,7 +112,7 @@ python3 -m verl.trainer.main_ppo \
     actor_rollout_ref.ref.fsdp_config.param_offload=True \
     reward_model.reward_manager=${REWARD_MANAGER} \
     trainer.critic_warmup=0 \
-    trainer.logger="[console, wandb]" \
+    trainer.logger="[console, swanlab]" \
     trainer.project_name=${PROJECT_NAME} \
     trainer.experiment_name=${EXPERIMENT_NAME} \
     trainer.n_gpus_per_node=${N_GPUS_PER_NODE} \

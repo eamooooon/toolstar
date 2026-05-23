@@ -16,9 +16,14 @@ var/
 *.egg-info/
 .installed.cfg
 *.egg
+models/
+data/
 
 # vscode
 .vscode
 
 # Mac
 .DS_Store
+
+# Local secrets
+.env

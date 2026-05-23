@@ -176,3 +176,6 @@ output/
 wandb/
 swanlog/
 generated_predictions.jsonl
+models/
+logs/
+data/final_sft_edition9.json

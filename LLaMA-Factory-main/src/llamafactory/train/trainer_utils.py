@@ -600,9 +600,24 @@ def get_swanlab_callback(finetuning_args: "FinetuningArguments") -> "TrainerCall
                 return
 
             super().setup(args, state, model, **kwargs)
-            swanlab_public_config = self._experiment.get_run().public.json()
-            with open(os.path.join(args.output_dir, SWANLAB_CONFIG), "w") as f:
-                f.write(json.dumps(swanlab_public_config, indent=2))
+            run = None
+            if hasattr(self, "_experiment") and self._experiment is not None:
+                run = self._experiment.get_run()
+            elif hasattr(self, "_swanlab") and self._swanlab is not None:
+                run = self._swanlab.get_run()
+
+            if run is None:
+                logger.warning_rank0("SwanLab run object is unavailable, skipping public config export.")
+                return
+
+            public = getattr(run, "public", None)
+            if public is None:
+                logger.warning_rank0("SwanLab public config is unavailable, skipping public config export.")
+                return
+
+            swanlab_public_config = public.json() if callable(getattr(public, "json", None)) else public
+            with open(os.path.join(args.output_dir, SWANLAB_CONFIG), "w", encoding="utf-8") as f:
+                f.write(json.dumps(swanlab_public_config, indent=2, ensure_ascii=False))
 
     swanlab_callback = SwanLabCallbackExtension(
         project=finetuning_args.swanlab_project,

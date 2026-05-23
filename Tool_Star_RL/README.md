@@ -40,39 +40,40 @@ bash scripts/train/train.sh \
     --save_freq 10 \
     --test_freq 10 \
     --total_epochs 2 \
-    --wandb_api_key {your_wandb_api_key} \
+    --swanlab_api_key {your_swanlab_api_key} \
     --save_path {your_save_path} \
     --train_files {path_to_train_file}/grpo_mix_train_shuffle.parquet \
     --test_files {path_to_test_file}/grpo_mix_test.parquet
 ```
 
-Since the rollout process involves Bing web search calls, please configure the `deep_search_snippet()` function in `/src/verl/verl/workers/rollout/vllm_rollout/web_search/web_search_main.py` with your search API:
+The provided training scripts default to `trainer.logger="[console, swanlab]"`. `wandb` is now optional and only used if you explicitly pass `--wandb_api_key`.
 
-```python
-def deep_search_snippet(search_query, top_k=10, use_jina=False, jina_api_key="empty", bing_subscription_key="your bing api key", bing_endpoint="https://api.bing.microsoft.com/v7.0/search"):
-    args = Namespace(
-        dataset_name='qa',
-        split='test',
-        subset_num=-1,
-        max_search_limit=15,
-        top_k=top_k,  
-        use_jina=use_jina,  
-        jina_api_key=jina_api_key,  
-        temperature=0.7,
-        top_p=0.8,
-        min_p=0.05,
-        top_k_sampling=20,
-        repetition_penalty=1.05,
-        max_tokens=4096,
-        bing_subscription_key=bing_subscription_key, 
-        bing_endpoint=bing_endpoint, 
-        eval=False,
-        seed=1742208600,
-        concurrent_limit=200
-    )
+Since the rollout process involves web search calls, configure the search provider with environment variables instead of hardcoding keys in code:
+
+```bash
+cp .env.example .env
 ```
 
-Replace `bing_subscription_key`, `bing_endpoint`, and `api_base_url` with your own values. Various web search modes are provided in this file for you to choose from.
+Then edit `.env`:
+
+```bash
+WEB_SEARCH_PROVIDER=brave
+WEB_SEARCH_API_KEY=your_brave_api_key
+WEB_SEARCH_ENDPOINT=https://api.search.brave.com/res/v1/web/search
+BRAVE_SEARCH_COUNTRY=US
+BRAVE_SEARCH_LANG=en
+BRAVE_SEARCH_SAFESEARCH=moderate
+```
+
+If you use `deep_search_browser_summarize()`, also configure:
+
+```bash
+WEB_SEARCH_SUMMARIZER_API_KEY=your_summarizer_api_key
+WEB_SEARCH_SUMMARIZER_BASE_URL=your_openai_compatible_base_url
+WEB_SEARCH_SUMMARIZER_MODEL=your_model_name
+```
+
+The rollout web search module will automatically load `.env` and use Brave search by default.
 
 You can then run the following script to start training:
 

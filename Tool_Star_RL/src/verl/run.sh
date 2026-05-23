@@ -10,7 +10,6 @@ module load gcc/9.5.0
 set -x
 
 export VLLM_ATTENTION_BACKEND=XFORMERS
-export WANDB_API_KEY=0a7b6feda1659e1159902ec41129bc9f0fe81019
 
 
 
@@ -31,7 +30,8 @@ NNODES=1
 SAVE_FREQ=1
 TEST_FREQ=1
 TOTAL_EPOCHS=3
-WANDB_API_KEY=0a7b6feda1659e1159902ec41129bc9f0fe81019
+WANDB_API_KEY=None
+SWANLAB_API_KEY=None
 SAVE_PATH=/home/u2024001021/ReSearch/hotpotqa/dgt_model  # your save path here
 
 TRAIN_DATA_PATH=/home/u2024001021/ReSearch/hotpotqa/train.parquet  # your train data path here
@@ -57,6 +57,7 @@ while [[ $# -gt 0 ]]; do
         --test_freq) TEST_FREQ="$2"; shift 2;;
         --total_epochs) TOTAL_EPOCHS="$2"; shift 2;;
         --wandb_api_key) WANDB_API_KEY="$2"; shift 2;;
+        --swanlab_api_key) SWANLAB_API_KEY="$2"; shift 2;;
         --save_path) SAVE_PATH="$2"; shift 2;;
         --train_data_path) TRAIN_DATA_PATH="$2"; shift 2;;
         --dev_data_path) DEV_DATA_PATH="$2"; shift 2;;
@@ -66,10 +67,6 @@ while [[ $# -gt 0 ]]; do
     esac
 done
 
-# if [ "$WANDB_API_KEY" != "None" ]; then
-#     wandb login --relogin $WANDB_API_KEY
-# fi
-
 # make output directory
 if [ ! -d "$SAVE_PATH" ]; then
     mkdir -p $SAVE_PATH
@@ -78,7 +75,15 @@ fi
 train_files=$TRAIN_DATA_PATH
 test_files=$DEV_DATA_PATH
 
-wandb login --relogin $WANDB_API_KEY
+if [ -n "$WANDB_API_KEY" ] && [ "$WANDB_API_KEY" != "None" ]; then
+    wandb login --relogin $WANDB_API_KEY
+    export WANDB_DIR=${SAVE_PATH}
+fi
+
+if [ -n "$SWANLAB_API_KEY" ] && [ "$SWANLAB_API_KEY" != "None" ]; then
+    export SWANLAB_API_KEY=${SWANLAB_API_KEY}
+    export SWANLAB_LOG_DIR=${SAVE_PATH}/swanlog
+fi
 
 python3 -m verl.trainer.main_ppo \
     algorithm.adv_estimator=grpo \
@@ -113,7 +118,7 @@ python3 -m verl.trainer.main_ppo \
     actor_rollout_ref.ref.fsdp_config.param_offload=True \
     reward_model.reward_manager=${REWARD_MANAGER} \
     trainer.critic_warmup=0 \
-    trainer.logger=['wandb'] \
+    trainer.logger="[console, swanlab]" \
     trainer.project_name=${PROJECT_NAME} \
     trainer.experiment_name=${EXPERIMENT_NAME} \
     trainer.n_gpus_per_node=4 \
